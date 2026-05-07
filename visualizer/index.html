@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hard-Crunchies: Partial Edge Recognition Visualizer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0f;color:#e0e0e0;font-family:'Courier New',monospace;overflow-x:hidden}
+header{background:linear-gradient(135deg,#0d1b2a,#1a2940);border-bottom:2px solid #00ff88;padding:16px 24px}
+header h1{color:#00ff88;font-size:1.4em;letter-spacing:2px}
+header p{color:#7ab;font-size:.85em;margin-top:4px}
+.main{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 70px)}
+.controls{background:#0d1520;border-right:1px solid #1e3a5f;padding:20px;overflow-y:auto}
+.controls h2{color:#00aaff;font-size:.9em;letter-spacing:1px;margin-bottom:16px;border-bottom:1px solid #1e3a5f;padding-bottom:8px}
+.ctrl-group{margin-bottom:20px}
+.ctrl-group label{display:block;color:#7ab;font-size:.75em;margin-bottom:4px;letter-spacing:.5px}
+.ctrl-group input[type=range]{width:100%;accent-color:#00ff88;cursor:pointer}
+.ctrl-group .val{color:#00ff88;font-size:.8em;float:right}
+.ctrl-group select{width:100%;background:#0a1520;color:#e0e0e0;border:1px solid #1e3a5f;padding:4px;font-size:.8em}
+.canvas-area{background:#050810;display:flex;flex-direction:column;gap:0}
+.canvas-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1e3a5f}
+.canvas-wrap{background:#050810;padding:12px;position:relative}
+.canvas-wrap h3{color:#00aaff;font-size:.75em;letter-spacing:1px;margin-bottom:8px}
+canvas{display:block;width:100%;height:220px;image-rendering:pixelated}
+.bottom-panel{grid-column:1/-1;background:#0d1520;border-top:1px solid #1e3a5f;padding:16px;display:flex;gap:24px;flex-wrap:wrap}
+.metric{background:#0a1520;border:1px solid #1e3a5f;border-radius:4px;padding:10px 14px;min-width:140px}
+.metric .name{color:#7ab;font-size:.7em;letter-spacing:.5px}
+.metric .value{color:#00ff88;font-size:1.2em;font-weight:bold;margin-top:4px}
+.eq-panel{background:#080e18;border-top:1px solid #1e3a5f;padding:12px 20px;display:flex;gap:16px;overflow-x:auto}
+.eq{background:#0d1520;border:1px solid #00aaff33;border-radius:3px;padding:8px 12px;font-size:.72em;white-space:nowrap;color:#7ab}
+.eq span{color:#ffcc44}
+.btn{background:#0d2a1a;border:1px solid #00ff88;color:#00ff88;padding:8px 16px;cursor:pointer;font-family:inherit;font-size:.8em;letter-spacing:1px;transition:all .2s}
+.btn:hover{background:#00ff88;color:#000}
+.status{color:#ffcc44;font-size:.75em;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>&#9671; HARD-CRUNCHIES &mdash; Partial Edge Recognition at Range</h1>
+  <p>Atmospheric Turbulence &bull; Wavelength Attenuation &bull; Bayesian Pattern Completion &bull; MTF Analysis</p>
+</header>
+<div class="main">
+  <div class="controls">
+    <h2>SYSTEM PARAMETERS</h2>
+    <div class="ctrl-group">
+      <label>RANGE (km) <span class="val" id="v_range">2.0</span></label>
+      <input type="range" id="range_km" min="0.1" max="10" step="0.1" value="2">
+    </div>
+    <div class="ctrl-group">
+      <label>C&#8345;&#178; turbulence (log) <span class="val" id="v_cn2">-14</span></label>
+      <input type="range" id="cn2_log" min="-17" max="-12" step="0.1" value="-14">
+    </div>
+    <div class="ctrl-group">
+      <label>WAVELENGTH &#955; (&#956;m) <span class="val" id="v_lambda">0.85</span></label>
+      <input type="range" id="lambda_um" min="0.4" max="2.0" step="0.05" value="0.85">
+    </div>
+    <div class="ctrl-group">
+      <label>THERMAL GRADIENT (K/m) <span class="val" id="v_thermal">0.5</span></label>
+      <input type="range" id="thermal" min="0" max="3" step="0.1" value="0.5">
+    </div>
+    <div class="ctrl-group">
+      <label>APERTURE D (cm) <span class="val" id="v_aperture">15</span></label>
+      <input type="range" id="aperture" min="2" max="50" step="1" value="15">
+    </div>
+    <div class="ctrl-group">
+      <label>SNR BASE <span class="val" id="v_snr">40</span></label>
+      <input type="range" id="snr_base" min="5" max="100" step="1" value="40">
+    </div>
+    <div class="ctrl-group">
+      <label>EDGE THRESHOLD <span class="val" id="v_edge_thresh">0.3</span></label>
+      <input type="range" id="edge_thresh" min="0.05" max="0.95" step="0.05" value="0.3">
+    </div>
+    <div class="ctrl-group">
+      <label>TARGET SHAPE</label>
+      <select id="target_shape">
+        <option value="aircraft">Aircraft (swept wing)</option>
+        <option value="vehicle">Ground Vehicle</option>
+        <option value="person">Human Silhouette</option>
+        <option value="building">Building Profile</option>
+      </select>
+    </div>
+    <br>
+    <button class="btn" id="btn_run">&#9654; RUN SIMULATION</button>
+    <button class="btn" id="btn_track" style="margin-top:8px">&#9654; TRACK (animate)</button>
+    <div class="status" id="status">Ready.</div>
+  </div>
+  <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="canvas-row">
+      <div class="canvas-wrap">
+        <h3>&#9632; IDEAL TARGET (truth)</h3>
+        <canvas id="c_ideal" width="400" height="220"></canvas>
+      </div>
+      <div class="canvas-wrap">
+        <h3>&#9632; ATMOSPHERIC DEGRADATION</h3>
+        <canvas id="c_degraded" width="400" height="220"></canvas>
+      </div>
+    </div>
+    <div class="canvas-row">
+      <div class="canvas-wrap">
+        <h3>&#9632; EDGE EXTRACTION (structure tensor)</h3>
+        <canvas id="c_edges" width="400" height="220"></canvas>
+      </div>
+      <div class="canvas-wrap">
+        <h3>&#9632; PATTERN COMPLETION + HYPOTHESIS</h3>
+        <canvas id="c_hypothesis" width="400" height="220"></canvas>
+      </div>
+    </div>
+    <div class="canvas-row" style="grid-template-columns:1fr 1fr">
+      <div class="canvas-wrap">
+        <h3>&#9632; MTF vs SPATIAL FREQUENCY</h3>
+        <canvas id="c_mtf" width="400" height="160"></canvas>
+      </div>
+      <div class="canvas-wrap">
+        <h3>&#9632; WAVELENGTH ATTENUATION T(&#955;)</h3>
+        <canvas id="c_wavelength" width="400" height="160"></canvas>
+      </div>
+    </div>
+    <div class="bottom-panel">
+      <div class="metric"><div class="name">FRIED r&#8320; (cm)</div><div class="value" id="m_r0">--</div></div>
+      <div class="metric"><div class="name">MTF CUTOFF (cyc/m)</div><div class="value" id="m_fcutoff">--</div></div>
+      <div class="metric"><div class="name">SCINTILLATION &#963;&#178;</div><div class="value" id="m_scint">--</div></div>
+      <div class="metric"><div class="name">EDGE COVERAGE</div><div class="value" id="m_coverage">--</div></div>
+      <div class="metric"><div class="name">ID CONFIDENCE</div><div class="value" id="m_conf">--</div></div>
+      <div class="metric"><div class="name">ATTENUATION T(&#955;)</div><div class="value" id="m_trans">--</div></div>
+      <div class="metric"><div class="name">STREHL RATIO</div><div class="value" id="m_strehl">--</div></div>
+    </div>
+    <div class="eq-panel">
+      <div class="eq">r&#8320; = <span>0.185 (&#955;&#178;/C&#8345;&#178;R)^(3/5)</span></div>
+      <div class="eq">MTF = <span>exp(-3.44(&#955;fR/r&#8320;)^(5/3))</span></div>
+      <div class="eq">&#963;&#8545;&#178; = <span>1.23 C&#8345;&#178; k^(7/6) R^(11/6)</span></div>
+      <div class="eq">T(&#955;) = <span>exp(-&#946;&#8347;R)</span> &#946;&#8347; ~ <span>&#955;^-4.09</span></div>
+      <div class="eq">Chamfer = <span>exp(-&#945;d&#8336;) P(T&#8341;)</span></div>
+      <div class="eq">Edge CR: <span>&#916;x = &#963;_turb/SNR</span></div>
+    </div>
+  </div>
+</div>
+<script>
+const W=400,H=220;
+function getParams(){
+  const R=parseFloat(document.getElementById('range_km').value)*1000;
+  const cn2=Math.pow(10,parseFloat(document.getElementById('cn2_log').value));
+  const lam=parseFloat(document.getElementById('lambda_um').value)*1e-6;
+  const thermal=parseFloat(document.getElementById('thermal').value);
+  const D=parseFloat(document.getElementById('aperture').value)/100;
+  const snr=parseFloat(document.getElementById('snr_base').value);
+  const ethresh=parseFloat(document.getElementById('edge_thresh').value);
+  const shape=document.getElementById('target_shape').value;
+  return{R,cn2,lam,thermal,D,snr,ethresh,shape};
+}
+function calcPhysics(p){
+  const r0=0.185*Math.pow(p.lam*p.lam/(p.cn2*p.R),0.6);
+  const k=2*Math.PI/p.lam;
+  const scint=Math.min(1.23*p.cn2*Math.pow(k,7/6)*Math.pow(p.R,11/6),5);
+  const fcutoff=r0/(p.lam*p.R);
+  const sigma_turb=p.lam*p.R/(2*Math.PI*r0);
+  const strehl=p.D>r0?Math.pow(r0/p.D,2):1;
+  const beta_R=0.00879*Math.pow(p.lam*1e6,-4.09)*1e-3;
+  const trans=Math.exp(-beta_R*p.R);
+  const snr_eff=p.snr*trans/Math.max(1,Math.sqrt(1+scint));
+  return{r0,scint,fcutoff,sigma_turb,strehl,trans,snr_eff};
+}
+function updateMetrics(p,ph){
+  document.getElementById('m_r0').textContent=(ph.r0*100).toFixed(2);
+  document.getElementById('m_fcutoff').textContent=ph.fcutoff.toFixed(3);
+  document.getElementById('m_scint').textContent=ph.scint.toFixed(3);
+  document.getElementById('m_trans').textContent=(ph.trans*100).toFixed(1)+'%';
+  document.getElementById('m_strehl').textContent=ph.strehl.toFixed(3);
+}
+function getShapeEdges(shape,W,H){
+  const cx=W/2,cy=H/2;
+  const pts=[];
+  if(shape==='aircraft'){
+    const fuselage=[];
+    for(let t=-1;t<=1;t+=0.02)fuselage.push([cx+t*90,cy+5*t*t*8-3]);
+    for(let t=0;t<=1;t+=0.02){
+      pts.push([cx-20+t*(-60),cy-5-t*35]);
+      pts.push([cx-20+t*(-60),cy-5-t*35+3]);
+    }
+    for(let t=0;t<=1;t+=0.02){
+      pts.push([cx+20+t*(40),cy-5-t*15]);
+      pts.push([cx+20+t*(40),cy-5-t*15+3]);
+    }
+    for(let p of fuselage)pts.push(p);
+    for(let t=0;t<=1;t+=0.04)pts.push([cx-90+t*180,cy+4]);
+    for(let t=0;t<=1;t+=0.04)pts.push([cx+70+t*(-30),cy-8-t*25]);
+  }else if(shape==='vehicle'){
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-60+t*120,cy+30]);
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-60+t*120,cy-10]);
+    pts.push(...[[cx-60,cy-10],[cx-60,cy+30]]);
+    pts.push(...[[cx+60,cy-10],[cx+60,cy+30]]);
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-30+t*60,cy-10-t*0+Math.min(0,-25)]);
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-30+t*60,cy-35]);
+    pts.push(...[[cx-30,cy-10],[cx-30,cy-35]]);
+    pts.push(...[[cx+30,cy-10],[cx+30,cy-35]]);
+  }else if(shape==='person'){
+    for(let t=0;t<2*Math.PI;t+=0.15)pts.push([cx+12*Math.cos(t),cy-50+12*Math.sin(t)]);
+    for(let t=0;t<=1;t+=0.02)pts.push([cx,cy-38+t*50]);
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-20+t*40,cy-20]);
+    for(let t=0;t<=1;t+=0.03){pts.push([cx-5+t*(-15),cy+12+t*40]);pts.push([cx+5+t*(15),cy+12+t*40]);}
+  }else{
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-70+t*140,cy+40]);
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-70+t*140,cy-40]);
+    pts.push(...[[cx-70,cy-40],[cx-70,cy+40]]);
+    pts.push(...[[cx+70,cy-40],[cx+70,cy+40]]);
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-30+t*60,cy-40]);
+    pts.push(...[[cx-30,cy-40],[cx-30,cy-70]]);
+    pts.push(...[[cx+30,cy-40],[cx+30,cy-70]]);
+    for(let t=0;t<=1;t+=0.02)pts.push([cx-30+t*60,cy-70]);
+  }
+  return pts;
+}
+function drawIdeal(canvasId,shape,W,H){
+  const c=document.getElementById(canvasId);
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#050810';
+  ctx.fillRect(0,0,W,H);
+  const pts=getShapeEdges(shape,W,H);
+  ctx.fillStyle='rgba(0,255,136,0.08)';
+  ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#00ff88';
+  ctx.lineWidth=1.5;
+  pts.forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,0.8,0,2*Math.PI);ctx.fillStyle='#00ff88';ctx.fill();});
+  ctx.fillStyle='rgba(0,170,255,0.1)';
+  const cx=W/2,cy=H/2;
+  ctx.font='10px Courier New';
+  ctx.fillStyle='#7ab';
+  ctx.fillText('TRUE SILHOUETTE',10,16);
+  return pts;
+}
+function drawDegraded(canvasId,pts,ph,p,W,H){
+  const c=document.getElementById(canvasId);
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#050810';
+  ctx.fillRect(0,0,W,H);
+  const sigma_px=Math.min(ph.sigma_turb*200+ph.thermal*2,15);
+  pts.forEach(([x,y])=>{
+    const vis=Math.random()<ph.trans*(1/(1+ph.scint));
+    if(!vis)return;
+    const nx=x+gaussRand()*sigma_px;
+    const ny=y+gaussRand()*sigma_px;
+    const alpha=0.3+0.5*Math.exp(-ph.scint);
+    ctx.beginPath();
+    ctx.arc(nx,ny,1.2,0,2*Math.PI);
+    ctx.fillStyle=`rgba(0,200,100,${alpha})`;
+    ctx.fill();
+  });
+  const thermal_shift=ph.sigma_turb*50*p.thermal;
+  if(p.thermal>0.3){
+    for(let i=0;i<30;i++){
+      const x=Math.random()*W;
+      ctx.beginPath();
+      ctx.moveTo(x,0);
+      ctx.bezierCurveTo(x+gaussRand()*thermal_shift,H/3,x+gaussRand()*thermal_shift,2*H/3,x+gaussRand()*5,H);
+      ctx.strokeStyle=`rgba(255,100,0,${0.1*p.thermal})`;
+      ctx.lineWidth=1;
+      ctx.stroke();
+    }
+  }
+  ctx.font='10px Courier New';ctx.fillStyle='#7ab';
+  ctx.fillText(`ATM BLUR &#963;=${sigma_px.toFixed(1)}px`,10,16);
+}
+function gaussRand(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function drawEdges(canvasId,pts,ph,p,W,H){
+  const c=document.getElementById(canvasId);
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const sigma_px=Math.min(ph.sigma_turb*200+1,15);
+  const snr_eff=ph.snr_eff;
+  let detected=0,total=pts.length;
+  pts.forEach(([x,y],i)=>{
+    const grad=1/(sigma_px*Math.sqrt(2*Math.PI));
+    const edge_response=grad*Math.exp(-(Math.random()*sigma_px)**2/(2*sigma_px**2));
+    const noise=1/snr_eff;
+    if(edge_response>noise*p.ethresh&&Math.random()<ph.trans){
+      const conf=Math.min(edge_response/noise/10,1);
+      ctx.beginPath();ctx.arc(x,y,1.5,0,2*Math.PI);
+      ctx.fillStyle=`rgba(255,200,0,${0.4+0.6*conf})`;
+      ctx.fill();
+      detected++;
+    }
+  });
+  const coverage=detected/total;
+  document.getElementById('m_coverage').textContent=(coverage*100).toFixed(1)+'%';
+  ctx.font='10px Courier New';ctx.fillStyle='#7ab';
+  ctx.fillText(`COVERAGE: ${(coverage*100).toFixed(0)}%  THRESH=${p.ethresh}`,10,16);
+  return coverage;
+}
+function drawHypothesis(canvasId,pts,ph,p,coverage,W,H){
+  const c=document.getElementById(canvasId);
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const sigma_px=Math.min(ph.sigma_turb*200+1,15);
+  pts.forEach(([x,y],i)=>{
+    if(Math.random()<coverage){
+      ctx.beginPath();ctx.arc(x,y,1.5,0,2*Math.PI);
+      ctx.fillStyle='rgba(255,200,0,0.8)';ctx.fill();
+    }
+  });
+  ctx.setLineDash([3,5]);
+  ctx.strokeStyle='rgba(0,180,255,0.6)';ctx.lineWidth=1.5;
+  for(let i=0;i<pts.length-1;i+=3){
+    const[x1,y1]=pts[i];
+    const[x2,y2]=pts[Math.min(i+3,pts.length-1)];
+    if(Math.abs(x1-x2)<30&&Math.abs(y1-y2)<30&&Math.random()>coverage){
+      ctx.beginPath();ctx.moveTo(x1,y1);
+      const mx=(x1+x2)/2+(y2-y1)*0.2;
+      const my=(y1+y2)/2-(x2-x1)*0.2;
+      ctx.quadraticCurveTo(mx,my,x2,y2);ctx.stroke();
+    }
+  }
+  ctx.setLineDash([]);
+  const confidence=Math.min(coverage*ph.trans*(1/(1+ph.scint*0.3))*1.2,0.99);
+  document.getElementById('m_conf').textContent=(confidence*100).toFixed(1)+'%';
+  ctx.font='10px Courier New';ctx.fillStyle='#7ab';
+  ctx.fillText(`CONF: ${(confidence*100).toFixed(1)}% | P(T|E)=${(confidence).toFixed(3)}`,10,16);
+  const cx=W/2,cy=H/2;
+  const label={aircraft:'AIRCRAFT',vehicle:'VEHICLE',person:'PERSON',building:'BUILDING'}[p.shape];
+  const col=confidence>0.7?'#00ff88':confidence>0.4?'#ffcc00':'#ff4444';
+  ctx.fillStyle=col;ctx.font='bold 11px Courier New';
+  ctx.fillText(`&#9658; CLASS: ${label}`,10,H-20);
+  ctx.fillText(`Chamfer d = ${((1-confidence)*15).toFixed(2)}px`,10,H-8);
+}
+function drawMTF(canvasId,ph,p){
+  const c=document.getElementById(canvasId);
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#1e3a5f';ctx.lineWidth=1;
+  for(let i=1;i<5;i++){ctx.beginPath();ctx.moveTo(0,i*H/5);ctx.lineTo(W,i*H/5);ctx.stroke();}
+  for(let i=1;i<8;i++){ctx.beginPath();ctx.moveTo(i*W/8,0);ctx.lineTo(i*W/8,H);ctx.stroke();}
+  const f_max=ph.fcutoff*3;
+  const drawMTFcurve=(color,label,fn)=>{
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;
+    for(let xi=0;xi<W;xi++){
+      const f=(xi/W)*f_max;
+      const mtf=Math.max(0,fn(f));
+      const y=H-mtf*(H-20)-5;
+      xi===0?ctx.moveTo(xi,y):ctx.lineTo(xi,y);
+    }
+    ctx.stroke();
+  };
+  drawMTFcurve('#ff4444','TURB',f=>Math.exp(-3.44*Math.pow(p.lam*f*p.R/Math.max(ph.r0,1e-5),5/3)));
+  drawMTFcurve('#00aaff','OPTICS',f=>{const fc=p.D/(p.lam*p.R);const x=f/fc;return x>1?0:2/Math.PI*(Math.acos(x)-x*Math.sqrt(1-x*x));});
+  drawMTFcurve('#00ff88','TOTAL',f=>{
+    const mt=Math.exp(-3.44*Math.pow(p.lam*f*p.R/Math.max(ph.r0,1e-5),5/3));
+    const fc=p.D/(p.lam*p.R);const x=f/fc;
+    const mo=x>1?0:2/Math.PI*(Math.acos(x)-x*Math.sqrt(1-x*x));
+    return mt*mo;
+  });
+  ctx.font='9px Courier New';
+  ctx.fillStyle='#ff4444';ctx.fillText('TURB',W-70,20);
+  ctx.fillStyle='#00aaff';ctx.fillText('OPTICS',W-70,32);
+  ctx.fillStyle='#00ff88';ctx.fillText('TOTAL',W-70,44);
+  ctx.fillStyle='#7ab';ctx.fillText('MTF vs freq (cyc/m)',8,14);
+  const fcx=(ph.fcutoff/f_max)*W;
+  ctx.setLineDash([4,4]);ctx.strokeStyle='#ffcc44';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(fcx,0);ctx.lineTo(fcx,H);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#ffcc44';ctx.fillText('r&#8320; cutoff',fcx+2,H-4);
+}
+function drawWavelength(canvasId,p,ph){
+  const c=document.getElementById(canvasId);
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#1e3a5f';ctx.lineWidth=1;
+  for(let i=1;i<5;i++){ctx.beginPath();ctx.moveTo(0,i*H/5);ctx.lineTo(W,i*H/5);ctx.stroke();}
+  const lam_min=0.3,lam_max=2.5;
+  ctx.beginPath();ctx.lineWidth=2.5;
+  for(let xi=0;xi<W;xi++){
+    const lam_um=lam_min+(xi/W)*(lam_max-lam_min);
+    const beta=0.00879*Math.pow(lam_um,-4.09)*1e-3;
+    const T=Math.exp(-beta*p.R);
+    const r0=0.185*Math.pow((lam_um*1e-6)**2/(p.cn2*p.R),0.6);
+    const snr_fac=T*Math.sqrt(Math.pow(lam_um,-2));
+    const y=H-snr_fac*(H-20)-5;
+    const hue=Math.round(270*(1-(lam_um-lam_min)/(lam_max-lam_min)));
+    ctx.strokeStyle=`hsl(${hue},100%,60%)`;
+    xi===0?ctx.moveTo(xi,y):ctx.lineTo(xi,y);
+    ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xi,y);
+  }
+  const cur_x=(p.lam*1e6-lam_min)/(lam_max-lam_min)*W;
+  ctx.setLineDash([4,4]);ctx.strokeStyle='#ffffff';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cur_x,0);ctx.lineTo(cur_x,H);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#7ab';ctx.font='9px Courier New';ctx.fillText('SNR(&#955;) relative',8,14);
+  ctx.fillStyle='#fff';ctx.fillText(`&#955;=${(p.lam*1e6).toFixed(2)}&#956;m`,cur_x+2,H-4);
+}
+let animId=null;
+function runSim(){
+  const p=getParams();
+  const ph=calcPhysics(p);
+  updateMetrics(p,ph);
+  const pts=drawIdeal('c_ideal',p.shape,W,H);
+  drawDegraded('c_degraded',pts,ph,p,W,H);
+  const coverage=drawEdges('c_edges',pts,ph,p,W,H);
+  drawHypothesis('c_hypothesis',pts,ph,p,coverage,W,H);
+  drawMTF('c_mtf',ph,p);
+  drawWavelength('c_wavelength',p,ph);
+  document.getElementById('status').textContent='Simulated at R='+( p.R/1000).toFixed(1)+'km  r&#8320;='+(ph.r0*100).toFixed(2)+'cm';
+}
+function startTrack(){
+  if(animId){clearInterval(animId);animId=null;document.getElementById('btn_track').textContent='&#9654; TRACK (animate)';return;}
+  document.getElementById('btn_track').textContent='&#9646;&#9646; STOP';
+  let t=0;
+  animId=setInterval(()=>{
+    t+=0.02;
+    const rSlider=document.getElementById('range_km');
+    const base=parseFloat(rSlider.min);
+    const range=parseFloat(rSlider.max)-base;
+    rSlider.value=base+range*0.5*(1+Math.sin(t));
+    document.getElementById('v_range').textContent=parseFloat(rSlider.value).toFixed(1);
+    runSim();
+  },120);
+}
+document.querySelectorAll('input[type=range]').forEach(el=>{
+  el.addEventListener('input',e=>{
+    const map={range_km:'v_range',cn2_log:'v_cn2',lambda_um:'v_lambda',thermal:'v_thermal',aperture:'v_aperture',snr_base:'v_snr',edge_thresh:'v_edge_thresh'};
+    if(map[el.id])document.getElementById(map[el.id]).textContent=el.id==='cn2_log'?el.value:parseFloat(el.value).toFixed(el.step<0.1?2:el.step<1?1:0);
+  });
+});
+document.getElementById('btn_run').addEventListener('click',runSim);
+document.getElementById('btn_track').addEventListener('click',startTrack);
+document.getElementById('target_shape').addEventListener('change',runSim);
+runSim();
+</script>
+</body>
+</html>
