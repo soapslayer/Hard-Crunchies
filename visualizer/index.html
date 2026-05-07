@@ -13,26 +13,26 @@ header p{color:#7ab;font-size:.85em;margin-top:4px}
 .main{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 70px)}
 .controls{background:#0d1520;border-right:1px solid #1e3a5f;padding:20px;overflow-y:auto}
 .controls h2{color:#00aaff;font-size:.9em;letter-spacing:1px;margin-bottom:16px;border-bottom:1px solid #1e3a5f;padding-bottom:8px}
-.ctrl-group{margin-bottom:20px}
+.ctrl-group{margin-bottom:18px}
 .ctrl-group label{display:block;color:#7ab;font-size:.75em;margin-bottom:4px;letter-spacing:.5px}
 .ctrl-group input[type=range]{width:100%;accent-color:#00ff88;cursor:pointer}
 .ctrl-group .val{color:#00ff88;font-size:.8em;float:right}
 .ctrl-group select{width:100%;background:#0a1520;color:#e0e0e0;border:1px solid #1e3a5f;padding:4px;font-size:.8em}
-.canvas-area{background:#050810;display:flex;flex-direction:column;gap:0}
-.canvas-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1e3a5f}
-.canvas-wrap{background:#050810;padding:12px;position:relative}
-.canvas-wrap h3{color:#00aaff;font-size:.75em;letter-spacing:1px;margin-bottom:8px}
-canvas{display:block;width:100%;height:220px;image-rendering:pixelated}
-.bottom-panel{grid-column:1/-1;background:#0d1520;border-top:1px solid #1e3a5f;padding:16px;display:flex;gap:24px;flex-wrap:wrap}
-.metric{background:#0a1520;border:1px solid #1e3a5f;border-radius:4px;padding:10px 14px;min-width:140px}
-.metric .name{color:#7ab;font-size:.7em;letter-spacing:.5px}
-.metric .value{color:#00ff88;font-size:1.2em;font-weight:bold;margin-top:4px}
-.eq-panel{background:#080e18;border-top:1px solid #1e3a5f;padding:12px 20px;display:flex;gap:16px;overflow-x:auto}
-.eq{background:#0d1520;border:1px solid #00aaff33;border-radius:3px;padding:8px 12px;font-size:.72em;white-space:nowrap;color:#7ab}
+.right-col{display:flex;flex-direction:column;flex:1;overflow:hidden;min-width:0}
+.canvas-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1e3a5f;flex-shrink:0}
+.canvas-wrap{background:#050810;padding:8px;position:relative}
+.canvas-wrap h3{color:#00aaff;font-size:.72em;letter-spacing:1px;margin-bottom:6px}
+.canvas-wrap canvas{display:block;width:100%;height:auto}
+.bottom-panel{background:#0d1520;border-top:1px solid #1e3a5f;padding:12px 16px;display:flex;gap:16px;flex-wrap:wrap;flex-shrink:0}
+.metric{background:#0a1520;border:1px solid #1e3a5f;border-radius:4px;padding:8px 12px;min-width:120px}
+.metric .name{color:#7ab;font-size:.68em;letter-spacing:.5px}
+.metric .value{color:#00ff88;font-size:1.1em;font-weight:bold;margin-top:3px}
+.eq-panel{background:#080e18;border-top:1px solid #1e3a5f;padding:10px 16px;display:flex;gap:12px;overflow-x:auto;flex-shrink:0;flex-wrap:wrap}
+.eq{background:#0d1520;border:1px solid #00aaff33;border-radius:3px;padding:6px 10px;font-size:.7em;white-space:nowrap;color:#7ab}
 .eq span{color:#ffcc44}
-.btn{background:#0d2a1a;border:1px solid #00ff88;color:#00ff88;padding:8px 16px;cursor:pointer;font-family:inherit;font-size:.8em;letter-spacing:1px;transition:all .2s}
+.btn{background:#0d2a1a;border:1px solid #00ff88;color:#00ff88;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:.8em;letter-spacing:1px;transition:all .2s;display:block;width:100%;margin-top:6px}
 .btn:hover{background:#00ff88;color:#000}
-.status{color:#ffcc44;font-size:.75em;margin-top:8px}
+.status{color:#ffcc44;font-size:.72em;margin-top:8px;min-height:1.2em}
 </style>
 </head>
 <body>
@@ -48,11 +48,11 @@ canvas{display:block;width:100%;height:220px;image-rendering:pixelated}
       <input type="range" id="range_km" min="0.1" max="10" step="0.1" value="2">
     </div>
     <div class="ctrl-group">
-      <label>C&#8345;&#178; turbulence (log) <span class="val" id="v_cn2">-14</span></label>
+      <label>C&#8345;&sup2; turbulence (log) <span class="val" id="v_cn2">-14</span></label>
       <input type="range" id="cn2_log" min="-17" max="-12" step="0.1" value="-14">
     </div>
     <div class="ctrl-group">
-      <label>WAVELENGTH &#955; (&#956;m) <span class="val" id="v_lambda">0.85</span></label>
+      <label>WAVELENGTH &lambda; (&micro;m) <span class="val" id="v_lambda">0.85</span></label>
       <input type="range" id="lambda_um" min="0.4" max="2.0" step="0.05" value="0.85">
     </div>
     <div class="ctrl-group">
@@ -68,7 +68,7 @@ canvas{display:block;width:100%;height:220px;image-rendering:pixelated}
       <input type="range" id="snr_base" min="5" max="100" step="1" value="40">
     </div>
     <div class="ctrl-group">
-      <label>EDGE THRESHOLD <span class="val" id="v_edge_thresh">0.3</span></label>
+      <label>EDGE THRESHOLD <span class="val" id="v_edge_thresh">0.30</span></label>
       <input type="range" id="edge_thresh" min="0.05" max="0.95" step="0.05" value="0.3">
     </div>
     <div class="ctrl-group">
@@ -80,355 +80,435 @@ canvas{display:block;width:100%;height:220px;image-rendering:pixelated}
         <option value="building">Building Profile</option>
       </select>
     </div>
-    <br>
     <button class="btn" id="btn_run">&#9654; RUN SIMULATION</button>
-    <button class="btn" id="btn_track" style="margin-top:8px">&#9654; TRACK (animate)</button>
-    <div class="status" id="status">Ready.</div>
+    <button class="btn" id="btn_track">&#9654; TRACK (animate)</button>
+    <div class="status" id="status">Ready. Click RUN SIMULATION.</div>
   </div>
-  <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+  <div class="right-col">
     <div class="canvas-row">
       <div class="canvas-wrap">
         <h3>&#9632; IDEAL TARGET (truth)</h3>
-        <canvas id="c_ideal" width="400" height="220"></canvas>
+        <canvas id="c_ideal" width="500" height="200"></canvas>
       </div>
       <div class="canvas-wrap">
         <h3>&#9632; ATMOSPHERIC DEGRADATION</h3>
-        <canvas id="c_degraded" width="400" height="220"></canvas>
+        <canvas id="c_degraded" width="500" height="200"></canvas>
       </div>
     </div>
     <div class="canvas-row">
       <div class="canvas-wrap">
         <h3>&#9632; EDGE EXTRACTION (structure tensor)</h3>
-        <canvas id="c_edges" width="400" height="220"></canvas>
+        <canvas id="c_edges" width="500" height="200"></canvas>
       </div>
       <div class="canvas-wrap">
         <h3>&#9632; PATTERN COMPLETION + HYPOTHESIS</h3>
-        <canvas id="c_hypothesis" width="400" height="220"></canvas>
+        <canvas id="c_hypothesis" width="500" height="200"></canvas>
       </div>
     </div>
-    <div class="canvas-row" style="grid-template-columns:1fr 1fr">
+    <div class="canvas-row">
       <div class="canvas-wrap">
         <h3>&#9632; MTF vs SPATIAL FREQUENCY</h3>
-        <canvas id="c_mtf" width="400" height="160"></canvas>
+        <canvas id="c_mtf" width="500" height="150"></canvas>
       </div>
       <div class="canvas-wrap">
-        <h3>&#9632; WAVELENGTH ATTENUATION T(&#955;)</h3>
-        <canvas id="c_wavelength" width="400" height="160"></canvas>
+        <h3>&#9632; WAVELENGTH ATTENUATION T(&lambda;)</h3>
+        <canvas id="c_wavelength" width="500" height="150"></canvas>
       </div>
     </div>
     <div class="bottom-panel">
-      <div class="metric"><div class="name">FRIED r&#8320; (cm)</div><div class="value" id="m_r0">--</div></div>
+      <div class="metric"><div class="name">FRIED r&sub0; (cm)</div><div class="value" id="m_r0">--</div></div>
       <div class="metric"><div class="name">MTF CUTOFF (cyc/m)</div><div class="value" id="m_fcutoff">--</div></div>
-      <div class="metric"><div class="name">SCINTILLATION &#963;&#178;</div><div class="value" id="m_scint">--</div></div>
+      <div class="metric"><div class="name">SCINTILLATION &sigma;&sup2;</div><div class="value" id="m_scint">--</div></div>
       <div class="metric"><div class="name">EDGE COVERAGE</div><div class="value" id="m_coverage">--</div></div>
       <div class="metric"><div class="name">ID CONFIDENCE</div><div class="value" id="m_conf">--</div></div>
-      <div class="metric"><div class="name">ATTENUATION T(&#955;)</div><div class="value" id="m_trans">--</div></div>
+      <div class="metric"><div class="name">ATTENUATION T(&lambda;)</div><div class="value" id="m_trans">--</div></div>
       <div class="metric"><div class="name">STREHL RATIO</div><div class="value" id="m_strehl">--</div></div>
     </div>
     <div class="eq-panel">
-      <div class="eq">r&#8320; = <span>0.185 (&#955;&#178;/C&#8345;&#178;R)^(3/5)</span></div>
-      <div class="eq">MTF = <span>exp(-3.44(&#955;fR/r&#8320;)^(5/3))</span></div>
-      <div class="eq">&#963;&#8545;&#178; = <span>1.23 C&#8345;&#178; k^(7/6) R^(11/6)</span></div>
-      <div class="eq">T(&#955;) = <span>exp(-&#946;&#8347;R)</span> &#946;&#8347; ~ <span>&#955;^-4.09</span></div>
-      <div class="eq">Chamfer = <span>exp(-&#945;d&#8336;) P(T&#8341;)</span></div>
-      <div class="eq">Edge CR: <span>&#916;x = &#963;_turb/SNR</span></div>
+      <div class="eq">r&sub0; = <span>0.185 (&lambda;&sup2;/C&sub;n&sup2;R)^(3/5)</span></div>
+      <div class="eq">MTF = <span>exp(-3.44(&lambda;fR/r&sub0;)^(5/3))</span></div>
+      <div class="eq">&sigma;I&sup2; = <span>1.23 C&sub;n&sup2; k^(7/6) R^(11/6)</span></div>
+      <div class="eq">T(&lambda;) = <span>exp(-&beta;R)</span>&nbsp;&beta; ~ <span>&lambda;^-4.09</span></div>
+      <div class="eq">Chamfer = <span>exp(-&alpha;d) P(Tj)</span></div>
+      <div class="eq">Edge CR: <span>&Delta;x = &sigma;_turb/SNR</span></div>
     </div>
   </div>
 </div>
 <script>
-const W=400,H=220;
+// ---- PHYSICS ----
 function getParams(){
-  const R=parseFloat(document.getElementById('range_km').value)*1000;
-  const cn2=Math.pow(10,parseFloat(document.getElementById('cn2_log').value));
-  const lam=parseFloat(document.getElementById('lambda_um').value)*1e-6;
-  const thermal=parseFloat(document.getElementById('thermal').value);
-  const D=parseFloat(document.getElementById('aperture').value)/100;
-  const snr=parseFloat(document.getElementById('snr_base').value);
-  const ethresh=parseFloat(document.getElementById('edge_thresh').value);
-  const shape=document.getElementById('target_shape').value;
-  return{R,cn2,lam,thermal,D,snr,ethresh,shape};
+  return {
+    R:    parseFloat(document.getElementById('range_km').value)*1000,
+    cn2:  Math.pow(10, parseFloat(document.getElementById('cn2_log').value)),
+    lam:  parseFloat(document.getElementById('lambda_um').value)*1e-6,
+    thermal: parseFloat(document.getElementById('thermal').value),
+    D:    parseFloat(document.getElementById('aperture').value)/100,
+    snr:  parseFloat(document.getElementById('snr_base').value),
+    ethresh: parseFloat(document.getElementById('edge_thresh').value),
+    shape: document.getElementById('target_shape').value
+  };
 }
+
 function calcPhysics(p){
-  const r0=0.185*Math.pow(p.lam*p.lam/(p.cn2*p.R),0.6);
-  const k=2*Math.PI/p.lam;
-  const scint=Math.min(1.23*p.cn2*Math.pow(k,7/6)*Math.pow(p.R,11/6),5);
-  const fcutoff=r0/(p.lam*p.R);
-  const sigma_turb=p.lam*p.R/(2*Math.PI*r0);
-  const strehl=p.D>r0?Math.pow(r0/p.D,2):1;
-  const beta_R=0.00879*Math.pow(p.lam*1e6,-4.09)*1e-3;
-  const trans=Math.exp(-beta_R*p.R);
-  const snr_eff=p.snr*trans/Math.max(1,Math.sqrt(1+scint));
-  return{r0,scint,fcutoff,sigma_turb,strehl,trans,snr_eff};
+  const r0 = 0.185 * Math.pow(p.lam*p.lam / (p.cn2 * p.R), 0.6);
+  const k  = 2*Math.PI / p.lam;
+  const scint = Math.min(1.23 * p.cn2 * Math.pow(k,7/6) * Math.pow(p.R,11/6), 8);
+  const fcutoff = r0 / (p.lam * p.R);
+  const sigma_turb = (p.lam * p.R) / (2*Math.PI * r0);
+  const strehl = p.D > r0 ? Math.pow(r0/p.D,2) : 1.0;
+  const beta_R = 0.00879 * Math.pow(p.lam*1e6, -4.09) * 1e-3;
+  const trans = Math.exp(-beta_R * p.R);
+  const snr_eff = p.snr * trans / Math.max(1, Math.sqrt(1 + scint));
+  return {r0, scint, fcutoff, sigma_turb, strehl, trans, snr_eff};
 }
-function updateMetrics(p,ph){
-  document.getElementById('m_r0').textContent=(ph.r0*100).toFixed(2);
-  document.getElementById('m_fcutoff').textContent=ph.fcutoff.toFixed(3);
-  document.getElementById('m_scint').textContent=ph.scint.toFixed(3);
-  document.getElementById('m_trans').textContent=(ph.trans*100).toFixed(1)+'%';
-  document.getElementById('m_strehl').textContent=ph.strehl.toFixed(3);
+
+function updateMetrics(p, ph){
+  document.getElementById('m_r0').textContent      = (ph.r0*100).toFixed(2);
+  document.getElementById('m_fcutoff').textContent = ph.fcutoff.toFixed(4);
+  document.getElementById('m_scint').textContent   = ph.scint.toFixed(3);
+  document.getElementById('m_trans').textContent   = (ph.trans*100).toFixed(1)+'%';
+  document.getElementById('m_strehl').textContent  = ph.strehl.toFixed(4);
 }
-function getShapeEdges(shape,W,H){
-  const cx=W/2,cy=H/2;
-  const pts=[];
+
+// ---- SHAPE EDGE GENERATORS ----
+function getShapeEdges(shape, W, H){
+  const cx=W/2, cy=H/2, pts=[];
+  const line=(x1,y1,x2,y2,n=40)=>{
+    for(let i=0;i<=n;i++){const t=i/n; pts.push([x1+t*(x2-x1), y1+t*(y2-y1)]);}
+  };
+  const arc=(ox,oy,rx,ry,a0,a1,n=60)=>{
+    for(let i=0;i<=n;i++){const t=a0+(a1-a0)*i/n; pts.push([ox+rx*Math.cos(t), oy+ry*Math.sin(t)]);}
+  };
+
   if(shape==='aircraft'){
-    const fuselage=[];
-    for(let t=-1;t<=1;t+=0.02)fuselage.push([cx+t*90,cy+5*t*t*8-3]);
-    for(let t=0;t<=1;t+=0.02){
-      pts.push([cx-20+t*(-60),cy-5-t*35]);
-      pts.push([cx-20+t*(-60),cy-5-t*35+3]);
-    }
-    for(let t=0;t<=1;t+=0.02){
-      pts.push([cx+20+t*(40),cy-5-t*15]);
-      pts.push([cx+20+t*(40),cy-5-t*15+3]);
-    }
-    for(let p of fuselage)pts.push(p);
-    for(let t=0;t<=1;t+=0.04)pts.push([cx-90+t*180,cy+4]);
-    for(let t=0;t<=1;t+=0.04)pts.push([cx+70+t*(-30),cy-8-t*25]);
-  }else if(shape==='vehicle'){
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-60+t*120,cy+30]);
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-60+t*120,cy-10]);
-    pts.push(...[[cx-60,cy-10],[cx-60,cy+30]]);
-    pts.push(...[[cx+60,cy-10],[cx+60,cy+30]]);
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-30+t*60,cy-10-t*0+Math.min(0,-25)]);
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-30+t*60,cy-35]);
-    pts.push(...[[cx-30,cy-10],[cx-30,cy-35]]);
-    pts.push(...[[cx+30,cy-10],[cx+30,cy-35]]);
-  }else if(shape==='person'){
-    for(let t=0;t<2*Math.PI;t+=0.15)pts.push([cx+12*Math.cos(t),cy-50+12*Math.sin(t)]);
-    for(let t=0;t<=1;t+=0.02)pts.push([cx,cy-38+t*50]);
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-20+t*40,cy-20]);
-    for(let t=0;t<=1;t+=0.03){pts.push([cx-5+t*(-15),cy+12+t*40]);pts.push([cx+5+t*(15),cy+12+t*40]);}
-  }else{
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-70+t*140,cy+40]);
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-70+t*140,cy-40]);
-    pts.push(...[[cx-70,cy-40],[cx-70,cy+40]]);
-    pts.push(...[[cx+70,cy-40],[cx+70,cy+40]]);
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-30+t*60,cy-40]);
-    pts.push(...[[cx-30,cy-40],[cx-30,cy-70]]);
-    pts.push(...[[cx+30,cy-40],[cx+30,cy-70]]);
-    for(let t=0;t<=1;t+=0.02)pts.push([cx-30+t*60,cy-70]);
+    // fuselage
+    arc(cx, cy, 100, 8, Math.PI, 2*Math.PI, 80);
+    arc(cx, cy, 100, 8, 0, Math.PI, 80);
+    // left wing
+    line(cx-20, cy-2, cx-90, cy-40);
+    line(cx-90, cy-40, cx-60, cy+2);
+    line(cx-60, cy+2, cx-20, cy-2);
+    // right wing
+    line(cx+20, cy-2, cx+70, cy-25);
+    line(cx+70, cy-25, cx+50, cy+2);
+    line(cx+50, cy+2, cx+20, cy-2);
+    // tail fin
+    line(cx+80, cy-4, cx+100, cy-30);
+    line(cx+100, cy-30, cx+110, cy-4);
+  } else if(shape==='vehicle'){
+    // hull
+    line(cx-70, cy+30, cx+70, cy+30);
+    line(cx+70, cy+30, cx+70, cy-10);
+    line(cx+70, cy-10, cx-70, cy-10);
+    line(cx-70, cy-10, cx-70, cy+30);
+    // cabin
+    line(cx-30, cy-10, cx-20, cy-38);
+    line(cx-20, cy-38, cx+20, cy-38);
+    line(cx+20, cy-38, cx+30, cy-10);
+    // wheels
+    arc(cx-45, cy+32, 12, 8, 0, 2*Math.PI, 30);
+    arc(cx+45, cy+32, 12, 8, 0, 2*Math.PI, 30);
+    // detail lines
+    line(cx-10, cy-38, cx-10, cy-10);
+    line(cx+10, cy-38, cx+10, cy-10);
+  } else if(shape==='person'){
+    // head
+    arc(cx, cy-58, 14, 14, 0, 2*Math.PI, 40);
+    // neck
+    line(cx-4, cy-44, cx-4, cy-38);
+    line(cx+4, cy-44, cx+4, cy-38);
+    // shoulders
+    line(cx-4, cy-38, cx-28, cy-28);
+    line(cx+4, cy-38, cx+28, cy-28);
+    // torso
+    line(cx-22, cy-28, cx-18, cy+8);
+    line(cx+22, cy-28, cx+18, cy+8);
+    line(cx-18, cy+8, cx+18, cy+8);
+    // arms
+    line(cx-28, cy-28, cx-36, cy+5);
+    line(cx+28, cy-28, cx+36, cy+5);
+    // legs
+    line(cx-18, cy+8, cx-20, cy+55);
+    line(cx+18, cy+8, cx+20, cy+55);
+    // feet
+    line(cx-20, cy+55, cx-32, cy+58);
+    line(cx+20, cy+55, cx+32, cy+58);
+  } else {
+    // building
+    line(cx-70, cy+50, cx+70, cy+50);
+    line(cx+70, cy+50, cx+70, cy-50);
+    line(cx+70, cy-50, cx-70, cy-50);
+    line(cx-70, cy-50, cx-70, cy+50);
+    // windows row 1
+    for(let wx=-50;wx<=50;wx+=25){ line(wx+cx-7,cy-35,wx+cx+7,cy-35); line(wx+cx-7,cy-15,wx+cx+7,cy-15); line(wx+cx-7,cy-35,wx+cx-7,cy-15); line(wx+cx+7,cy-35,wx+cx+7,cy-15);}
+    // windows row 2
+    for(let wx=-50;wx<=50;wx+=25){ line(wx+cx-7,cy+5,wx+cx+7,cy+5); line(wx+cx-7,cy+25,wx+cx+7,cy+25); line(wx+cx-7,cy+5,wx+cx-7,cy+25); line(wx+cx+7,cy+5,wx+cx+7,cy+25);}
+    // roof detail
+    line(cx-25, cy-50, cx-25, cy-65);
+    line(cx+25, cy-50, cx+25, cy-65);
+    line(cx-25, cy-65, cx+25, cy-65);
   }
   return pts;
 }
-function drawIdeal(canvasId,shape,W,H){
-  const c=document.getElementById(canvasId);
-  const ctx=c.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#050810';
-  ctx.fillRect(0,0,W,H);
+// ---- GAUSSIAN NOISE ----
+function gaussRand(){
+  let u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+// ---- DRAW: IDEAL ----
+function drawIdeal(id, shape, W, H){
+  const c=document.getElementById(id), ctx=c.getContext('2d');
+  ctx.fillStyle='#050810'; ctx.fillRect(0,0,W,H);
   const pts=getShapeEdges(shape,W,H);
-  ctx.fillStyle='rgba(0,255,136,0.08)';
-  ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='#00ff88';
-  ctx.lineWidth=1.5;
-  pts.forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,0.8,0,2*Math.PI);ctx.fillStyle='#00ff88';ctx.fill();});
-  ctx.fillStyle='rgba(0,170,255,0.1)';
-  const cx=W/2,cy=H/2;
-  ctx.font='10px Courier New';
-  ctx.fillStyle='#7ab';
+  ctx.fillStyle='#00ff88';
+  pts.forEach(([x,y])=>{
+    ctx.beginPath(); ctx.arc(x,y,1.2,0,2*Math.PI); ctx.fill();
+  });
+  ctx.font='10px Courier New'; ctx.fillStyle='#7ab';
   ctx.fillText('TRUE SILHOUETTE',10,16);
   return pts;
 }
-function drawDegraded(canvasId,pts,ph,p,W,H){
-  const c=document.getElementById(canvasId);
-  const ctx=c.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#050810';
-  ctx.fillRect(0,0,W,H);
-  const sigma_px=Math.min(ph.sigma_turb*200+ph.thermal*2,15);
+
+// ---- DRAW: DEGRADED ----
+function drawDegraded(id, pts, ph, p, W, H){
+  const c=document.getElementById(id), ctx=c.getContext('2d');
+  ctx.fillStyle='#050810'; ctx.fillRect(0,0,W,H);
+  const spx = Math.min(ph.sigma_turb*300 + p.thermal*1.5, 18);
   pts.forEach(([x,y])=>{
-    const vis=Math.random()<ph.trans*(1/(1+ph.scint));
-    if(!vis)return;
-    const nx=x+gaussRand()*sigma_px;
-    const ny=y+gaussRand()*sigma_px;
-    const alpha=0.3+0.5*Math.exp(-ph.scint);
-    ctx.beginPath();
-    ctx.arc(nx,ny,1.2,0,2*Math.PI);
-    ctx.fillStyle=`rgba(0,200,100,${alpha})`;
-    ctx.fill();
+    if(Math.random() > ph.trans*(1/(1+ph.scint*0.5))) return;
+    const nx=x+gaussRand()*spx, ny=y+gaussRand()*spx;
+    const alpha=Math.max(0.1, 0.8*Math.exp(-ph.scint*0.4));
+    ctx.beginPath(); ctx.arc(nx,ny,1.4,0,2*Math.PI);
+    ctx.fillStyle='rgba(0,200,100,'+alpha+')'; ctx.fill();
   });
-  const thermal_shift=ph.sigma_turb*50*p.thermal;
-  if(p.thermal>0.3){
-    for(let i=0;i<30;i++){
+  if(p.thermal>0.2){
+    const ts=ph.sigma_turb*60*p.thermal;
+    for(let i=0;i<25;i++){
       const x=Math.random()*W;
-      ctx.beginPath();
-      ctx.moveTo(x,0);
-      ctx.bezierCurveTo(x+gaussRand()*thermal_shift,H/3,x+gaussRand()*thermal_shift,2*H/3,x+gaussRand()*5,H);
-      ctx.strokeStyle=`rgba(255,100,0,${0.1*p.thermal})`;
-      ctx.lineWidth=1;
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,0);
+      ctx.bezierCurveTo(x+gaussRand()*ts,H/3, x+gaussRand()*ts,2*H/3, x+gaussRand()*4,H);
+      ctx.strokeStyle='rgba(255,80,0,'+(0.07*p.thermal)+')'; ctx.lineWidth=1; ctx.stroke();
     }
   }
-  ctx.font='10px Courier New';ctx.fillStyle='#7ab';
-  ctx.fillText(`ATM BLUR &#963;=${sigma_px.toFixed(1)}px`,10,16);
+  ctx.font='10px Courier New'; ctx.fillStyle='#7ab';
+  ctx.fillText('ATM BLUR sigma='+spx.toFixed(1)+'px',10,16);
 }
-function gaussRand(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function drawEdges(canvasId,pts,ph,p,W,H){
-  const c=document.getElementById(canvasId);
-  const ctx=c.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
-  const sigma_px=Math.min(ph.sigma_turb*200+1,15);
-  const snr_eff=ph.snr_eff;
-  let detected=0,total=pts.length;
-  pts.forEach(([x,y],i)=>{
-    const grad=1/(sigma_px*Math.sqrt(2*Math.PI));
-    const edge_response=grad*Math.exp(-(Math.random()*sigma_px)**2/(2*sigma_px**2));
-    const noise=1/snr_eff;
-    if(edge_response>noise*p.ethresh&&Math.random()<ph.trans){
-      const conf=Math.min(edge_response/noise/10,1);
-      ctx.beginPath();ctx.arc(x,y,1.5,0,2*Math.PI);
-      ctx.fillStyle=`rgba(255,200,0,${0.4+0.6*conf})`;
-      ctx.fill();
+
+// ---- DRAW: EDGES ----
+function drawEdges(id, pts, ph, p, W, H){
+  const c=document.getElementById(id), ctx=c.getContext('2d');
+  ctx.fillStyle='#050810'; ctx.fillRect(0,0,W,H);
+  const spx=Math.max(0.5, Math.min(ph.sigma_turb*300+1, 18));
+  let detected=0;
+  pts.forEach(([x,y])=>{
+    const grad = 1/(spx*Math.sqrt(2*Math.PI));
+    const jitter = Math.abs(gaussRand())*spx*0.5;
+    const er = grad * Math.exp(-jitter*jitter/(2*spx*spx));
+    const noise = 1/Math.max(ph.snr_eff,0.01);
+    if(er > noise*p.ethresh && Math.random()<ph.trans){
+      const conf=Math.min(er/(noise+0.001)/8,1);
+      ctx.beginPath(); ctx.arc(x,y,1.5,0,2*Math.PI);
+      ctx.fillStyle='rgba(255,200,0,'+(0.4+0.6*conf)+')'; ctx.fill();
       detected++;
     }
   });
-  const coverage=detected/total;
-  document.getElementById('m_coverage').textContent=(coverage*100).toFixed(1)+'%';
-  ctx.font='10px Courier New';ctx.fillStyle='#7ab';
-  ctx.fillText(`COVERAGE: ${(coverage*100).toFixed(0)}%  THRESH=${p.ethresh}`,10,16);
-  return coverage;
+  const cov=pts.length>0?detected/pts.length:0;
+  document.getElementById('m_coverage').textContent=(cov*100).toFixed(1)+'%';
+  ctx.font='10px Courier New'; ctx.fillStyle='#7ab';
+  ctx.fillText('COVERAGE: '+(cov*100).toFixed(0)+'%  thresh='+p.ethresh.toFixed(2),10,16);
+  return cov;
 }
-function drawHypothesis(canvasId,pts,ph,p,coverage,W,H){
-  const c=document.getElementById(canvasId);
-  const ctx=c.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
-  const sigma_px=Math.min(ph.sigma_turb*200+1,15);
-  pts.forEach(([x,y],i)=>{
-    if(Math.random()<coverage){
-      ctx.beginPath();ctx.arc(x,y,1.5,0,2*Math.PI);
-      ctx.fillStyle='rgba(255,200,0,0.8)';ctx.fill();
+
+// ---- DRAW: HYPOTHESIS ----
+function drawHypothesis(id, pts, ph, p, cov, W, H){
+  const c=document.getElementById(id), ctx=c.getContext('2d');
+  ctx.fillStyle='#050810'; ctx.fillRect(0,0,W,H);
+  // detected points
+  pts.forEach(([x,y])=>{
+    if(Math.random()<cov){
+      ctx.beginPath(); ctx.arc(x,y,1.5,0,2*Math.PI);
+      ctx.fillStyle='rgba(255,200,0,0.85)'; ctx.fill();
     }
   });
-  ctx.setLineDash([3,5]);
-  ctx.strokeStyle='rgba(0,180,255,0.6)';ctx.lineWidth=1.5;
-  for(let i=0;i<pts.length-1;i+=3){
-    const[x1,y1]=pts[i];
-    const[x2,y2]=pts[Math.min(i+3,pts.length-1)];
-    if(Math.abs(x1-x2)<30&&Math.abs(y1-y2)<30&&Math.random()>coverage){
-      ctx.beginPath();ctx.moveTo(x1,y1);
-      const mx=(x1+x2)/2+(y2-y1)*0.2;
-      const my=(y1+y2)/2-(x2-x1)*0.2;
-      ctx.quadraticCurveTo(mx,my,x2,y2);ctx.stroke();
+  // Euler-spiral completion arcs for gaps
+  ctx.setLineDash([3,5]); ctx.strokeStyle='rgba(0,180,255,0.7)'; ctx.lineWidth=1.5;
+  for(let i=0;i<pts.length-4;i+=4){
+    const [x1,y1]=pts[i], [x2,y2]=pts[Math.min(i+4,pts.length-1)];
+    const dist=Math.hypot(x2-x1,y2-y1);
+    if(dist<40 && dist>2 && Math.random()>cov){
+      ctx.beginPath(); ctx.moveTo(x1,y1);
+      const mx=(x1+x2)/2+(y2-y1)*0.25;
+      const my=(y1+y2)/2-(x2-x1)*0.25;
+      ctx.quadraticCurveTo(mx,my,x2,y2); ctx.stroke();
     }
   }
   ctx.setLineDash([]);
-  const confidence=Math.min(coverage*ph.trans*(1/(1+ph.scint*0.3))*1.2,0.99);
-  document.getElementById('m_conf').textContent=(confidence*100).toFixed(1)+'%';
-  ctx.font='10px Courier New';ctx.fillStyle='#7ab';
-  ctx.fillText(`CONF: ${(confidence*100).toFixed(1)}% | P(T|E)=${(confidence).toFixed(3)}`,10,16);
-  const cx=W/2,cy=H/2;
-  const label={aircraft:'AIRCRAFT',vehicle:'VEHICLE',person:'PERSON',building:'BUILDING'}[p.shape];
-  const col=confidence>0.7?'#00ff88':confidence>0.4?'#ffcc00':'#ff4444';
-  ctx.fillStyle=col;ctx.font='bold 11px Courier New';
-  ctx.fillText(`&#9658; CLASS: ${label}`,10,H-20);
-  ctx.fillText(`Chamfer d = ${((1-confidence)*15).toFixed(2)}px`,10,H-8);
+  const conf=Math.min(cov*ph.trans*(1/(1+ph.scint*0.25))*1.3, 0.99);
+  document.getElementById('m_conf').textContent=(conf*100).toFixed(1)+'%';
+  const labels={aircraft:'AIRCRAFT',vehicle:'VEHICLE',person:'PERSON',building:'BUILDING'};
+  const col=conf>0.7?'#00ff88':conf>0.4?'#ffcc00':'#ff4444';
+  ctx.fillStyle='#7ab'; ctx.font='10px Courier New';
+  ctx.fillText('CONF: '+(conf*100).toFixed(1)+'%  P(T|E)='+conf.toFixed(3),10,16);
+  ctx.fillStyle=col; ctx.font='bold 12px Courier New';
+  ctx.fillText('>> CLASS: '+labels[p.shape],10,H-20);
+  ctx.fillStyle='#aaa'; ctx.font='9px Courier New';
+  ctx.fillText('Chamfer d='+((1-conf)*18).toFixed(2)+'px',10,H-8);
 }
-function drawMTF(canvasId,ph,p){
-  const c=document.getElementById(canvasId);
-  const ctx=c.getContext('2d');
-  const W=c.width,H=c.height;
-  ctx.clearRect(0,0,W,H);ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='#1e3a5f';ctx.lineWidth=1;
+// ---- DRAW: MTF ----
+function drawMTF(id, ph, p){
+  const c=document.getElementById(id), ctx=c.getContext('2d');
+  const W=c.width, H=c.height;
+  ctx.fillStyle='#050810'; ctx.fillRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle='#1e3a5f'; ctx.lineWidth=1;
   for(let i=1;i<5;i++){ctx.beginPath();ctx.moveTo(0,i*H/5);ctx.lineTo(W,i*H/5);ctx.stroke();}
   for(let i=1;i<8;i++){ctx.beginPath();ctx.moveTo(i*W/8,0);ctx.lineTo(i*W/8,H);ctx.stroke();}
-  const f_max=ph.fcutoff*3;
-  const drawMTFcurve=(color,label,fn)=>{
-    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;
-    for(let xi=0;xi<W;xi++){
+  const f_max=Math.max(ph.fcutoff*4, 0.001);
+
+  function plotCurve(color, fn){
+    ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2;
+    for(let xi=0;xi<=W;xi++){
       const f=(xi/W)*f_max;
-      const mtf=Math.max(0,fn(f));
-      const y=H-mtf*(H-20)-5;
-      xi===0?ctx.moveTo(xi,y):ctx.lineTo(xi,y);
+      const y=H - Math.max(0,Math.min(1,fn(f)))*(H-24)-4;
+      xi===0 ? ctx.moveTo(xi,y) : ctx.lineTo(xi,y);
     }
     ctx.stroke();
-  };
-  drawMTFcurve('#ff4444','TURB',f=>Math.exp(-3.44*Math.pow(p.lam*f*p.R/Math.max(ph.r0,1e-5),5/3)));
-  drawMTFcurve('#00aaff','OPTICS',f=>{const fc=p.D/(p.lam*p.R);const x=f/fc;return x>1?0:2/Math.PI*(Math.acos(x)-x*Math.sqrt(1-x*x));});
-  drawMTFcurve('#00ff88','TOTAL',f=>{
-    const mt=Math.exp(-3.44*Math.pow(p.lam*f*p.R/Math.max(ph.r0,1e-5),5/3));
-    const fc=p.D/(p.lam*p.R);const x=f/fc;
-    const mo=x>1?0:2/Math.PI*(Math.acos(x)-x*Math.sqrt(1-x*x));
+  }
+
+  // Turbulence MTF
+  plotCurve('#ff5555', f=>{
+    if(f===0) return 1;
+    return Math.exp(-3.44*Math.pow(Math.max(p.lam*f*p.R/Math.max(ph.r0,1e-8),0),5/3));
+  });
+  // Diffraction-limited optics MTF
+  plotCurve('#44aaff', f=>{
+    const fc=p.D/(p.lam*p.R); if(fc<=0) return 0;
+    const xn=f/fc; if(xn>=1) return 0;
+    return (2/Math.PI)*(Math.acos(xn)-xn*Math.sqrt(Math.max(0,1-xn*xn)));
+  });
+  // Total
+  plotCurve('#00ff88', f=>{
+    if(f===0) return 1;
+    const mt=Math.exp(-3.44*Math.pow(Math.max(p.lam*f*p.R/Math.max(ph.r0,1e-8),0),5/3));
+    const fc=p.D/(p.lam*p.R); if(fc<=0) return 0;
+    const xn=f/fc; if(xn>=1) return 0;
+    const mo=(2/Math.PI)*(Math.acos(xn)-xn*Math.sqrt(Math.max(0,1-xn*xn)));
     return mt*mo;
   });
-  ctx.font='9px Courier New';
-  ctx.fillStyle='#ff4444';ctx.fillText('TURB',W-70,20);
-  ctx.fillStyle='#00aaff';ctx.fillText('OPTICS',W-70,32);
-  ctx.fillStyle='#00ff88';ctx.fillText('TOTAL',W-70,44);
-  ctx.fillStyle='#7ab';ctx.fillText('MTF vs freq (cyc/m)',8,14);
-  const fcx=(ph.fcutoff/f_max)*W;
-  ctx.setLineDash([4,4]);ctx.strokeStyle='#ffcc44';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(fcx,0);ctx.lineTo(fcx,H);ctx.stroke();
+
+  // Fried cutoff line
+  const fcx=Math.min((ph.fcutoff/f_max)*W, W-2);
+  ctx.setLineDash([4,4]); ctx.strokeStyle='#ffcc44'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(fcx,0); ctx.lineTo(fcx,H); ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle='#ffcc44';ctx.fillText('r&#8320; cutoff',fcx+2,H-4);
+
+  // Labels
+  ctx.font='9px Courier New';
+  ctx.fillStyle='#ff5555'; ctx.fillText('TURB',W-62,18);
+  ctx.fillStyle='#44aaff'; ctx.fillText('OPTICS',W-62,30);
+  ctx.fillStyle='#00ff88'; ctx.fillText('TOTAL',W-62,42);
+  ctx.fillStyle='#7ab';    ctx.fillText('MTF vs spatial freq (cyc/m)',8,13);
+  ctx.fillStyle='#ffcc44'; ctx.fillText('r0 cut',fcx+2,H-4);
 }
-function drawWavelength(canvasId,p,ph){
-  const c=document.getElementById(canvasId);
-  const ctx=c.getContext('2d');
-  const W=c.width,H=c.height;
-  ctx.clearRect(0,0,W,H);ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='#1e3a5f';ctx.lineWidth=1;
+
+// ---- DRAW: WAVELENGTH ----
+function drawWavelength(id, p, ph){
+  const c=document.getElementById(id), ctx=c.getContext('2d');
+  const W=c.width, H=c.height;
+  ctx.fillStyle='#050810'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#1e3a5f'; ctx.lineWidth=1;
   for(let i=1;i<5;i++){ctx.beginPath();ctx.moveTo(0,i*H/5);ctx.lineTo(W,i*H/5);ctx.stroke();}
-  const lam_min=0.3,lam_max=2.5;
-  ctx.beginPath();ctx.lineWidth=2.5;
-  for(let xi=0;xi<W;xi++){
+
+  const lam_min=0.3, lam_max=2.5;
+  // draw spectrum-colored SNR curve pixel by pixel
+  let prevX=0, prevY=H;
+  for(let xi=0;xi<=W;xi++){
     const lam_um=lam_min+(xi/W)*(lam_max-lam_min);
     const beta=0.00879*Math.pow(lam_um,-4.09)*1e-3;
     const T=Math.exp(-beta*p.R);
-    const r0=0.185*Math.pow((lam_um*1e-6)**2/(p.cn2*p.R),0.6);
-    const snr_fac=T*Math.sqrt(Math.pow(lam_um,-2));
-    const y=H-snr_fac*(H-20)-5;
+    const snr_fac=T*Math.pow(lam_um,-0.8); // shorter lambda = finer res but less photons
+    const norm=Math.max(0,Math.min(1,snr_fac*3));
+    const y=H - norm*(H-20)-4;
     const hue=Math.round(270*(1-(lam_um-lam_min)/(lam_max-lam_min)));
-    ctx.strokeStyle=`hsl(${hue},100%,60%)`;
-    xi===0?ctx.moveTo(xi,y):ctx.lineTo(xi,y);
+    ctx.beginPath();
+    ctx.strokeStyle='hsl('+hue+',100%,60%)';
+    ctx.lineWidth=2;
+    ctx.moveTo(prevX, prevY);
+    ctx.lineTo(xi, y);
     ctx.stroke();
-    ctx.beginPath();ctx.moveTo(xi,y);
+    prevX=xi; prevY=y;
   }
-  const cur_x=(p.lam*1e6-lam_min)/(lam_max-lam_min)*W;
-  ctx.setLineDash([4,4]);ctx.strokeStyle='#ffffff';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(cur_x,0);ctx.lineTo(cur_x,H);ctx.stroke();
+
+  // current wavelength marker
+  const cur_x=Math.max(2,Math.min(W-2,(p.lam*1e6-lam_min)/(lam_max-lam_min)*W));
+  ctx.setLineDash([4,4]); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(cur_x,0); ctx.lineTo(cur_x,H); ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle='#7ab';ctx.font='9px Courier New';ctx.fillText('SNR(&#955;) relative',8,14);
-  ctx.fillStyle='#fff';ctx.fillText(`&#955;=${(p.lam*1e6).toFixed(2)}&#956;m`,cur_x+2,H-4);
+
+  // axis labels
+  ctx.font='9px Courier New'; ctx.fillStyle='#7ab';
+  ctx.fillText('SNR(lambda) relative',8,13);
+  ctx.fillText('0.3um',4,H-3);
+  ctx.fillText('2.5um',W-34,H-3);
+  ctx.fillStyle='#fff';
+  ctx.fillText((p.lam*1e6).toFixed(2)+'um', Math.min(cur_x+3,W-40), 26);
 }
-let animId=null;
+
+// ---- MAIN SIM ----
+const CW=500, CH=200;
 function runSim(){
-  const p=getParams();
-  const ph=calcPhysics(p);
+  const p=getParams(), ph=calcPhysics(p);
   updateMetrics(p,ph);
-  const pts=drawIdeal('c_ideal',p.shape,W,H);
-  drawDegraded('c_degraded',pts,ph,p,W,H);
-  const coverage=drawEdges('c_edges',pts,ph,p,W,H);
-  drawHypothesis('c_hypothesis',pts,ph,p,coverage,W,H);
+  const pts=drawIdeal('c_ideal',p.shape,CW,CH);
+  drawDegraded('c_degraded',pts,ph,p,CW,CH);
+  const cov=drawEdges('c_edges',pts,ph,p,CW,CH);
+  drawHypothesis('c_hypothesis',pts,ph,p,cov,CW,CH);
   drawMTF('c_mtf',ph,p);
   drawWavelength('c_wavelength',p,ph);
-  document.getElementById('status').textContent='Simulated at R='+( p.R/1000).toFixed(1)+'km  r&#8320;='+(ph.r0*100).toFixed(2)+'cm';
+  document.getElementById('status').textContent=
+    'R='+( p.R/1000).toFixed(1)+'km  r0='+(ph.r0*100).toFixed(2)+'cm  SNR_eff='+ph.snr_eff.toFixed(1);
 }
+
+// ---- ANIMATION ----
+let animId=null;
 function startTrack(){
-  if(animId){clearInterval(animId);animId=null;document.getElementById('btn_track').textContent='&#9654; TRACK (animate)';return;}
-  document.getElementById('btn_track').textContent='&#9646;&#9646; STOP';
+  if(animId){
+    clearInterval(animId); animId=null;
+    document.getElementById('btn_track').textContent='>> TRACK (animate)';
+    return;
+  }
+  document.getElementById('btn_track').textContent='|| STOP';
   let t=0;
   animId=setInterval(()=>{
-    t+=0.02;
-    const rSlider=document.getElementById('range_km');
-    const base=parseFloat(rSlider.min);
-    const range=parseFloat(rSlider.max)-base;
-    rSlider.value=base+range*0.5*(1+Math.sin(t));
-    document.getElementById('v_range').textContent=parseFloat(rSlider.value).toFixed(1);
+    t+=0.025;
+    const sl=document.getElementById('range_km');
+    const v=parseFloat(sl.min)+(parseFloat(sl.max)-parseFloat(sl.min))*0.5*(1+Math.sin(t));
+    sl.value=v.toFixed(1);
+    document.getElementById('v_range').textContent=v.toFixed(1);
     runSim();
-  },120);
+  },100);
 }
+
+// ---- EVENT WIRING ----
+const labelMap={range_km:'v_range',cn2_log:'v_cn2',lambda_um:'v_lambda',
+  thermal:'v_thermal',aperture:'v_aperture',snr_base:'v_snr',edge_thresh:'v_edge_thresh'};
 document.querySelectorAll('input[type=range]').forEach(el=>{
-  el.addEventListener('input',e=>{
-    const map={range_km:'v_range',cn2_log:'v_cn2',lambda_um:'v_lambda',thermal:'v_thermal',aperture:'v_aperture',snr_base:'v_snr',edge_thresh:'v_edge_thresh'};
-    if(map[el.id])document.getElementById(map[el.id]).textContent=el.id==='cn2_log'?el.value:parseFloat(el.value).toFixed(el.step<0.1?2:el.step<1?1:0);
+  el.addEventListener('input',()=>{
+    const vid=labelMap[el.id];
+    if(vid) document.getElementById(vid).textContent=
+      el.id==='cn2_log' ? el.value : parseFloat(el.value).toFixed(parseFloat(el.step)<0.1?2:parseFloat(el.step)<1?1:0);
+    runSim();
   });
 });
-document.getElementById('btn_run').addEventListener('click',runSim);
-document.getElementById('btn_track').addEventListener('click',startTrack);
-document.getElementById('target_shape').addEventListener('change',runSim);
-runSim();
+document.getElementById('btn_run').addEventListener('click', runSim);
+document.getElementById('btn_track').addEventListener('click', startTrack);
+document.getElementById('target_shape').addEventListener('change', runSim);
+
+// auto-run on load
+window.addEventListener('load', runSim);
 </script>
 </body>
 </html>
